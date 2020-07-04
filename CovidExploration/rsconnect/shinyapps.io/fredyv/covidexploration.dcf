@@ -1,0 +1,10 @@
+name: covidexploration
+title:
+username:
+account: fredyv
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2535096
+bundleId: 3350569
+url: https://fredyv.shinyapps.io/covidexploration/
+when: 1593837678.56303
