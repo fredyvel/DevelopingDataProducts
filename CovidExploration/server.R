@@ -28,9 +28,9 @@ shinyServer(function(input, output) {
         
         dataAux<-data[which(data$countriesAndTerritories==countrie),]
         dataAux<-dataAux[order(dataAux$dateRep),]
-        dataAux<-cbind(dataAux,0,1:nrow(dataAux),0)
+        dataAux<-cbind(dataAux,0,0)
         
-        names<-c(colnames(data),'TotalCase','dayPerInit','totalDeath')
+        names<-c(colnames(data),'TotalCase','totalDeath')
         
         colnames(dataAux)<-names
         rownames(dataAux)<-c(1:nrow(dataAux))
@@ -43,9 +43,15 @@ shinyServer(function(input, output) {
             # i=85
             if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
         }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
         totalCases<-rbind(totalCases,dataAux)
+  
     }
-    totalCases<-totalCases[-which(totalCases$TotalCase==0),]
+    
+    
+    
+    
     output$plotConfirmados <- renderPlot({
         
         # generate bins based on input$bins from ui.R
@@ -62,6 +68,7 @@ shinyServer(function(input, output) {
         }
         gg1<-ggplot(countriData,aes(x=dayPerInit,y=TotalCase))
         gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
+        gg1<-gg1+ylab("Total Confirmed Cases")+ylab("Days Fince First Confirmed Case")
         gg1
         
     })
@@ -81,6 +88,7 @@ shinyServer(function(input, output) {
         }
         gg1<-ggplot(countriData,aes(x=dayPerInit,y=totalDeath))
         gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
+        gg1<-gg1+ylab("Total Death")+ylab("Days Fince First Confirmed Case")
         gg1
         
     })

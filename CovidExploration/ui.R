@@ -20,7 +20,7 @@ shinyUI(fluidPage(
   
   
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Select Country"),
     selectInput(
         "Ciudades",
         "Variable:",

@@ -51,20 +51,21 @@ head(unique(DataCovid$countriesAndTerritories))
   totalCases<-data[0,0]
   countries<-unique(data$countriesAndTerritories)
     for(countrie in countries)  {
-    dataAux<-data[which(data$countriesAndTerritories==countrie),]
-    dataAux<-dataAux[order(dataAux$dateRep),]
-    dataAux<-cbind(dataAux,0,1:nrow(dataAux),0)
-    names<-c(colnames(data),'TotalCase','dayPerInit','totalDeath')
-    colnames(dataAux)<-names
-    rownames(dataAux)<-c(1:nrow(dataAux))
-    for( i in 1:nrow(dataAux)){
-      if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
-    }
-    for( i in 1:nrow(dataAux)){
-      if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
-    }
-    totalCases<-rbind(totalCases,dataAux)
-
+        dataAux<-data[which(data$countriesAndTerritories==countrie),]
+        dataAux<-dataAux[order(dataAux$dateRep),]
+        dataAux<-cbind(dataAux,0,0)
+        names<-c(colnames(data),'TotalCase','totalDeath')
+        colnames(dataAux)<-names
+        rownames(dataAux)<-c(1:nrow(dataAux))
+        for( i in 1:nrow(dataAux)){
+            if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
+        }
+        for( i in 1:nrow(dataAux)){
+            if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
+        }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
+        totalCases<-rbind(totalCases,dataAux)
     }
     head(totalCases)
    
@@ -154,12 +155,12 @@ shinyApp(
     countries<-unique(data$countriesAndTerritories)
     
     for(countrie in countries)  {
-        
+               
         dataAux<-data[which(data$countriesAndTerritories==countrie),]
         dataAux<-dataAux[order(dataAux$dateRep),]
-        dataAux<-cbind(dataAux,0,1:nrow(dataAux),0)
+        dataAux<-cbind(dataAux,0,0)
         
-        names<-c(colnames(data),'TotalCase','dayPerInit','totalDeath')
+        names<-c(colnames(data),'TotalCase','totalDeath')
         
         colnames(dataAux)<-names
         rownames(dataAux)<-c(1:nrow(dataAux))
@@ -172,6 +173,8 @@ shinyApp(
             # i=85
             if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
         }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
         totalCases<-rbind(totalCases,dataAux)
     }
     totalCases<-totalCases[-which(totalCases$TotalCase==0),]
