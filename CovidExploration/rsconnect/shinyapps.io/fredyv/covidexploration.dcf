@@ -5,6 +5,6 @@ account: fredyv
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2535096
-bundleId: 3350569
+bundleId: 3351573
 url: https://fredyv.shinyapps.io/covidexploration/
-when: 1593837678.56303
+when: 1593872257.6184

@@ -17,8 +17,8 @@ shinyUI(fluidPage(
     download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv'),
     DataCovid <- read.csv("descarga.csv"),
     DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories),
-    sidebarLayout(
-    sidebarPanel(
+  
+  
     # Application title
     titlePanel("Old Faithful Geyser Data"),
     selectInput(
@@ -27,11 +27,10 @@ shinyUI(fluidPage(
         unique(DataCovid$countriesAndTerritories),
         multiple = TRUE
     ),
-    ),
+    
               
         mainPanel(
             plotOutput('plotConfirmados'),
             plotOutput('plotMuertes')
     )
 ))
-)
