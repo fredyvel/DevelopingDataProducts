@@ -9,7 +9,7 @@ library(stringr)
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE)
 ```
-Esta aplicacion es un experimento de la herramienta Shiny para explorar el comportamiento de contagio y muertes de Covid-19 en todos los paises, este set de datos lo obtuve de [OpenData](https://opendata.ecdc.europa.eu/covid19/casedistribution/csv), y muestra el reporte diario de casos confirmados y muertes de cada pais (tambien tenemos la poblacion total de cada pais, por si deseamos trabajar un analisis de contagio por millon de habitantes, sera en otro caso).
+Esta aplicación es un experimento de la herramienta Shiny para explorar el comportamiento de contagio y muertes de Covid-19 en todos los paises, este set de datos lo obtuve de [OpenData](https://opendata.ecdc.europa.eu/covid19/casedistribution/csv), y muestra el reporte diario de casos confirmados y muertes de cada pais (tambien tenemos la poblacion total de cada pais, por si deseamos trabajar un analisis de contagio por millon de habitantes, sera en otro caso).
 
 # Librerias
 ```{r }
@@ -113,7 +113,7 @@ Entiendo que esta parte es muy compleja de entender, pero shiny es facil de trab
 
 Antes de entrar a la aplicacion Shiny abajo incrustada, aqui he decidido solamente hacer una descarga del archivo, asi que la linea debajo del comando "ui=fluidPage(" debe ser descomentada para que shiny pueda descargar el set de datos y trabajarlo.
 
-Dejo el link de [Github](https://github.com/fredyvel/DevelopingDataProducts/tree/master/CovidExploration) y el link de shiny.io para  con el codigo Fuente
+Dejo el link de [Github](https://github.com/fredyvel/DevelopingDataProducts/tree/master/CovidExploration) con el codigo fuente y el link de [shiny.io](https://fredyv.shinyapps.io/covidexploration/) para que puedan hecharle un ojo a la aplicacion
 
 ```{r}
 shinyApp(
