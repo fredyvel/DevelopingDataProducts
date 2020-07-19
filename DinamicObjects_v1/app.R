@@ -1,0 +1,31 @@
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+
+library(shiny)
+ui <- fluidPage(
+    selectInput("dataset", "Dataset", c("diamonds", "rock", "pressure", "cars")),
+    conditionalPanel( condition = "output.nrows",
+                      checkboxInput("headonly", "Only use first 1000 rows"))
+)
+server <- function(input, output, session) {
+    datasetInput <- reactive({
+        switch(input$dataset,
+               "rock" = rock,
+               "pressure" = pressure,
+               "cars" = cars)
+    })
+    
+    output$nrows <- reactive({
+        nrow(datasetInput())
+    })
+    
+    outputOptions(output, "nrows", suspendWhenHidden = FALSE)  
+}
+
+shinyApp(ui, server)

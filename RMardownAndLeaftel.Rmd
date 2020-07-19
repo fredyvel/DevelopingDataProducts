@@ -1,0 +1,15 @@
+---
+title: "Fredy Velasquez"
+
+output: html_document
+---
+# July 18, 2020
+```{r, echo=FALSE}
+
+library(leaflet)
+mp<-leaflet() %>%
+  addTiles()%>%
+ setView(lng = -90.5167327 , lat = 14.625514, zoom = 08)
+mp
+```
+
