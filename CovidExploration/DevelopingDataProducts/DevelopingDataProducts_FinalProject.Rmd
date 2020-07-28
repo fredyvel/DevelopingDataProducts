@@ -1,0 +1,233 @@
+---
+title: "DevelopingDataProducts Covid-19 Exploration"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+library(stringr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+```
+This application is an experiment of the Shiny tool to explore the behavior of Covid-19 contagion and deaths in all countries, this dataset was obtained from [OpenData](https://opendata.ecdc.europa.eu/covid19/casedistribution/csv), and it shows the daily report of confirmed cases and deaths of each country (we also have the total population of each country, in case we want to work an analysis of contagion per million inhabitants, it will be in another case).
+
+# Librerias
+```{r }
+library(shiny)
+library(stringr)
+library(ggplot2)
+```
+
+# Carga de Datos Inicial
+
+We perform a data load at the time of starting Shiny, this is the sequence:
+
+ + We download and read the data from the above mentioned page (Note: Remember that the correct way to manage portable and reproducible applications is to leave the default path where the program's executables are).
+ 
+```{R}
+   if(!file.exists("descarga.csv") | as.Date(file.info("descarga.csv")$mtime)!=Sys.Date()){
+    download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv')
+  }
+DataCovid <- read.csv("descarga.csv")
+head(DataCovid)
+```
+
+ + We assign the correct format to the date.
+ 
+```{r}
+DataCovid$dateRep<-as.Date(DataCovid$dateRep,format='%d/%m/%Y')
+```
+
+ + We convert the names of the countries into Text
+ 
+``` {r}
+DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories)
+head(unique(DataCovid$countriesAndTerritories))
+```
+
++ We identify the unique names of the countries to be able to calculate the accumulated total of cases and accumulated total of patients by date.
+
+```{r} 
+
+  data<-DataCovid
+  totalCases<-data[0,0]
+  countries<-unique(data$countriesAndTerritories)
+    for(countrie in countries)  {
+        dataAux<-data[which(data$countriesAndTerritories==countrie),]
+        dataAux<-dataAux[order(dataAux$dateRep),]
+        dataAux<-cbind(dataAux,0,0)
+        names<-c(colnames(data),'TotalCase','totalDeath')
+        colnames(dataAux)<-names
+        rownames(dataAux)<-c(1:nrow(dataAux))
+        for( i in 1:nrow(dataAux)){
+            if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
+        }
+        for( i in 1:nrow(dataAux)){
+            if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
+        }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
+        totalCases<-rbind(totalCases,dataAux)
+    }
+    head(totalCases)
+   
+```
+
++ We carry out a sweep of the data and determine those records that are before the date on which the first infection was confirmed by each country.
+
+```{r}
+totalCases<-totalCases[-which(totalCases$TotalCase==0),]
+head(totalCases[c(1,7,13,14,12)])
+```
+
++ And finally, we created a function that graphs the deceased and confirmed cases (For the purposes of this document, we will only show the Confirmed graph).
+
+```{r}
+graficar<-function(name){
+   dataset<-totalCases
+  countriData<-dataset[0,0]
+  for(cty in name){
+    dataAux<-dataset[which(dataset$countriesAndTerritories==cty),]
+    countriData<-rbind(countriData,dataAux)
+  }
+  gg1<-ggplot(countriData,aes(x=dayPerInit,y=TotalCase))
+  gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
+  gg1<- gg1+ylab("Dias desde Primer Confirmado")+xlab("Total de Casos Confirmados")
+  gg1
+}
+```
+
+Example
+
+```{r}
+graficar(c('El_Salvador','Guatemala','Nicaragua','Costa_Rica','Honduras'))
+```
+
+
+# Incrustandolo en Shiny
+
+To embed in Shiny and be able to interact with the information, we must separate the code by parts and make it compatible with the library.
+
+In the interfaces part, we have downloaded and read the data and we have identified each of the names of the countries to be able to interact with them.
+
+On the server side, I have added the file load and all the data transformation again, and later on the call of the output objects, I have placed the graph of the selection countries in the list of names.
+
+I understand that this part is very complex to understand, but shiny is easy to work with, but complex to explain.
+
+Before entering the embedded Shiny application below, here I have decided to just download the file, so the line under the command "ui = fluidPage (" must be uncommented in order for shiny to download the dataset and work on it. 
+
+[Github Link](https://github.com/fredyvel/DevelopingDataProducts/tree/master/CovidExploration) 
+[shiny.io Link](https://fredyv.shinyapps.io/covidexploration/) 
+
+```{r}
+shinyApp(
+
+  ui = fluidPage(
+#  download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv'),
+    
+    
+  
+  
+    # Application title
+    titlePanel("Seleccione los paises que desea graficar"),
+    selectInput(
+        "Ciudades",
+        "Variable:",
+        unique(as.character(DataCovid <- read.csv("descarga.csv")$countriesAndTerritories)),
+        multiple = TRUE
+    ),
+    
+              
+        mainPanel(
+            plotOutput('plotConfirmados'),
+            plotOutput('plotMuertes')
+    )
+  ),
+
+  server = function(input, output) {
+    DataCovid <- read.csv("descarga.csv")
+    DataCovid$dateRep<-as.Date(DataCovid$dateRep,format='%d/%m/%Y')
+    DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories)
+    # unique(DataCovid$countriesAndTerritories)
+    data<-DataCovid
+    # countrie<-'Guatemala'
+    # class(DataCovid)
+    #?data.frame
+    # data<-DataCovid
+    totalCases<-data[0,0]
+    countries<-unique(data$countriesAndTerritories)
+    
+    for(countrie in countries)  {
+               
+        dataAux<-data[which(data$countriesAndTerritories==countrie),]
+        dataAux<-dataAux[order(dataAux$dateRep),]
+        dataAux<-cbind(dataAux,0,0)
+        
+        names<-c(colnames(data),'TotalCase','totalDeath')
+        
+        colnames(dataAux)<-names
+        rownames(dataAux)<-c(1:nrow(dataAux))
+        
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
+        }
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
+        }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
+        totalCases<-rbind(totalCases,dataAux)
+    }
+    totalCases<-totalCases[-which(totalCases$TotalCase==0),]
+    output$plotConfirmados <- renderPlot({
+        
+        # generate bins based on input$bins from ui.R
+        dataset<-  totalCases
+        # dataset<-resultTotales
+        # cty<-'Italy'
+        # name<-unique(as.character(resultTotales$countriesAndTerritories))[1:3]
+        
+        countriData<-dataset[0,0]
+        for(cty in input$Ciudades){
+            dataAux<-dataset[which(dataset$countriesAndTerritories==cty),]
+            countriData<-rbind(countriData,dataAux)
+            # View(countriData)
+        }
+        gg1<-ggplot(countriData,aes(x=dayPerInit,y=TotalCase))
+        gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
+        gg1
+        
+    })
+    output$plotMuertes <- renderPlot({
+        
+        # generate bins based on input$bins from ui.R
+        dataset<-  totalCases
+        # dataset<-resultTotales
+        # cty<-'Italy'
+        # name<-unique(as.character(resultTotales$countriesAndTerritories))[1:3]
+        
+        countriData<-dataset[0,0]
+        for(cty in input$Ciudades){
+            dataAux<-dataset[which(dataset$countriesAndTerritories==cty),]
+            countriData<-rbind(countriData,dataAux)
+            # View(countriData)
+        }
+        gg1<-ggplot(countriData,aes(x=dayPerInit,y=totalDeath))
+        gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
+        gg1
+        
+    })
+  },
+
+  options = list(height = 500)
+)
+
+
+
+```
+
+
