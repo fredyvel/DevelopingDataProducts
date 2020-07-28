@@ -67,8 +67,8 @@ shinyServer(function(input, output) {
             # View(countriData)
         }
         gg1<-ggplot(countriData,aes(x=dayPerInit,y=TotalCase))
-        gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
-        gg1<-gg1+ylab("Total Confirmed Cases")+ylab("Days Since First Confirmed Case")
+        gg1<-gg1+geom_line(aes(color=countriesAndTerritories))
+        gg1<-gg1+labs(y="Total Confirmed Cases",x="Days From First Case",color = 'Countries')
         gg1
         
     })
@@ -87,8 +87,8 @@ shinyServer(function(input, output) {
             # View(countriData)
         }
         gg1<-ggplot(countriData,aes(x=dayPerInit,y=totalDeath))
-        gg1<-gg1+geom_line(aes(color=countriesAndTerritories,linetype=countriesAndTerritories))
-        gg1<-gg1+ylab("Total Death")+ylab("Days Fince First Confirmed Case")
+        gg1<-gg1+geom_line(aes(color=countriesAndTerritories))
+        gg1<-gg1+ylab("Total Death")+xlab("Days From First Case")+labs(color = 'Countries')
         gg1
         
     })

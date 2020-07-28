@@ -1,0 +1,74 @@
+---
+title: "Covid-19 Confirmed Cases Per Country (Central America)"
+author: "Fredy Velasquez"
+date: "7/26/2020"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r, include=FALSE}
+library(plotly)
+library(stringr)
+if(!file.exists("descarga.csv") | as.Date(file.info("descarga.csv")$mtime)!=Sys.Date()){
+  download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv')
+}
+
+DataCovid <- read.csv("descarga.csv")
+DataCovid$dateRep<-as.Date(DataCovid$dateRep,format='%d/%m/%Y')
+DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories)
+
+data<-DataCovid
+  totalCases<-data[0,0]
+   countries<-c('El_Salvador','Guatemala','Nicaragua','Costa_Rica','Honduras','Panama')
+    for(countrie in countries)  {
+        
+        dataAux<-data[which(data$countriesAndTerritories==countrie),]
+        dataAux<-dataAux[order(dataAux$dateRep),]
+        dataAux<-cbind(dataAux,0,0)
+        
+        names<-c(colnames(data),'TotalCase','totalDeath')
+        
+        colnames(dataAux)<-names
+        rownames(dataAux)<-c(1:nrow(dataAux))
+        
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
+        }
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
+        }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
+        totalCases<-rbind(totalCases,dataAux)
+  
+    }
+  
+fig_confirmed <- plot_ly( x =totalCases$dayPerInit, y = totalCases$TotalCase, color = totalCases$countriesAndTerritories) 
+fig_confirmed <- fig_confirmed %>% add_lines() 
+fig_confirmed<- fig_confirmed%>%layout(title = "",
+         xaxis = list(title = "Days From First Case"),
+         yaxis = list (title = "Total Cases"))
+
+fig_death <- plot_ly( x =totalCases$dayPerInit, y = totalCases$totalDeath, color = totalCases$countriesAndTerritories) 
+fig_death <- fig_death %>% add_lines() 
+fig_death<- fig_death%>%layout(title = "",
+         xaxis = list(title = "Days From First Case"),
+         yaxis = list (title = "Total Death"))
+
+
+```
+
+
+## Confirmed Cases
+```{r,echo=FALSE}
+fig_confirmed
+print(paste0("Updated ",as.Date(file.info("descarga.csv")$mtime)))
+```
+## Total Death
+```{r,echo=FALSE}
+fig_death
+print(paste0("Updated ",as.Date(file.info("descarga.csv")$mtime)))
+```

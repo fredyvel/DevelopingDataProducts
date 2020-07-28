@@ -1,0 +1,12 @@
+---
+title: "Covid-19 Confirmed Cases Per Country (Central America)"
+author: "Fredy Velasquez"
+date: "7/25/2020"
+output: html_document
+---
+
+
+```{r,echo=FALSE}
+fig
+print(paste0("Updated ",as.Date(file.info("descarga.csv")$mtime)))
+```

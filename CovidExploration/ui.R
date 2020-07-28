@@ -13,8 +13,10 @@ library(ggplot2)
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
     
-        
-    download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv'),
+  if(!file.exists("descarga.csv") | as.Date(file.info("descarga.csv")$mtime)!=Sys.Date()){
+    download.file('https://opendata.ecdc.europa.eu/covid19/casedistribution/csv','descarga.csv')
+  },
+    
     DataCovid <- read.csv("descarga.csv"),
     DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories),
   
@@ -26,7 +28,7 @@ shinyUI(fluidPage(
         "Variable:",
         unique(DataCovid$countriesAndTerritories),
         multiple = TRUE
-    ),
+    ),  h3(paste0("Updated: ",as.Date(file.info("descarga.csv")$mtime))),
     
               
         mainPanel(
