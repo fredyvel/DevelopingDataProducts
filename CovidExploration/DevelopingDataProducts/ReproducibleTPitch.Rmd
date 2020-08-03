@@ -1,0 +1,93 @@
+---
+title: "Covid-19 Confirmed Cases Per Country (Central America)"
+author: "Fredy Velasquez"
+date: "8/2/2020"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Covid-19 Cases
+
+This application is an experiment of the Shiny tool to explore the behavior of Covid-19 contagion and deaths in all countries, this dataset was obtained from [OpenData](https://opendata.ecdc.europa.eu/covid19/casedistribution/csv), and it shows the daily report of confirmed cases and deaths of each country (we also have the total population of each country, in case we want to work an analysis of contagion per million inhabitants, it will be in another case).
+
+[Github Link](https://github.com/fredyvel/DevelopingDataProducts/tree/master/CovidExploration) 
+
+[shiny.io Link](https://fredyv.shinyapps.io/covidexploration/) 
+
+## Embedded in shiny
+
+To embed in Shiny and be able to interact with the information, we must separate the code by parts and make it compatible with the library.
+
+In the interfaces part, we have downloaded and read the data and we have identified each of the names of the countries to be able to interact with them.
+
+On the server side, I have added the file load and all the data transformation again, and later on the call of the output objects, I have placed the graph of the selection countries in the list of names.
+
+## Embedded in shiny
+
+I understand that this part is very complex to understand, but shiny is easy to work with, but complex to explain.
+
+Before entering the embedded Shiny application below, here I have decided to just download the file, so the line under the command "ui = fluidPage (" must be uncommented in order for shiny to download the dataset and work on it. 
+
+
+
+```{r,echo=FALSE, include=FALSE}
+library(shiny)
+library(stringr)
+library(ggplot2)
+library(plotly)
+```
+
+
+## Example
+
+```{R, echo=FALSE,include=FALSE}
+
+DataCovid <- read.csv("descarga.csv")
+DataCovid$dateRep<-as.Date(DataCovid$dateRep,format='%d/%m/%Y')
+DataCovid$countriesAndTerritories<-as.character(DataCovid$countriesAndTerritories)
+
+data<-DataCovid
+  totalCases<-data[0,0]
+   countries<-c('El_Salvador','Guatemala','Nicaragua','Costa_Rica','Honduras','Panama')
+    for(countrie in countries)  {
+        
+        dataAux<-data[which(data$countriesAndTerritories==countrie),]
+        dataAux<-dataAux[order(dataAux$dateRep),]
+        dataAux<-cbind(dataAux,0,0)
+        
+        names<-c(colnames(data),'TotalCase','totalDeath')
+        
+        colnames(dataAux)<-names
+        rownames(dataAux)<-c(1:nrow(dataAux))
+        
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$totalDeath[i]=dataAux$deaths[i] else dataAux$totalDeath[i]=dataAux$deaths[i]+dataAux$totalDeath[i-1]
+        }
+        for( i in 1:nrow(dataAux)){
+            # i=85
+            if(i==1) dataAux$TotalCase[i]=dataAux$cases[i] else dataAux$TotalCase[i]=dataAux$cases[i]+dataAux$TotalCase[i-1]
+        }
+        dataAux<- dataAux[which(dataAux$TotalCase!=0),]
+        dataAux$dayPerInit<-c(1:nrow(dataAux))
+        totalCases<-rbind(totalCases,dataAux)
+  
+    }
+  
+fig_confirmed <- plot_ly( x =totalCases$dayPerInit, y = totalCases$TotalCase, color = totalCases$countriesAndTerritories) 
+fig_confirmed <- fig_confirmed %>% add_lines() 
+fig_confirmed<- fig_confirmed%>%layout(title = "",
+         xaxis = list(title = "Days From First Case"),
+         yaxis = list (title = "Total Cases"))
+```
+
+
+```{r,echo=FALSE, include=TRUE}
+fig_confirmed
+print(paste0("Updated ",as.Date(file.info("descarga.csv")$mtime)))
+```

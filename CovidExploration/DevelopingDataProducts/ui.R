@@ -29,7 +29,8 @@ shinyUI(fluidPage(
         unique(DataCovid$countriesAndTerritories),
         multiple = TRUE
     ),  h3(paste0("Updated: ",as.Date(file.info("descarga.csv")$mtime))),
-    
+  ,helpText(   a("Click Here to Download Survey",     href="http://www.dfcm.utoronto.ca/Assets/DFCM2+Digital+Assets/Family+and+Community+Medicine/DFCM+Digital+Assets/Faculty+$!26+Staff/DFCM+Faculty+Work+$!26+Leadership+Survey+Poster.pdf")
+  ),
               
         mainPanel(
             plotOutput('plotConfirmados'),
