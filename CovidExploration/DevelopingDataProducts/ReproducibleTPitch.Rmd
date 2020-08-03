@@ -1,5 +1,5 @@
 ---
-title: "Covid-19 Confirmed Cases Per Country (Central America)"
+title: "Covid-19 Confirmed Cases Per Country"
 author: "Fredy Velasquez"
 date: "8/2/2020"
 output:
